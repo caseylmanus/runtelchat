@@ -1,5 +1,5 @@
 {
-    "port" : ":25",
+    "ports" : ["2300", "2301"],
     "host" : "localhost",
     "logFilePath" : "./messagelog.log"
 }

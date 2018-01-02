@@ -10,13 +10,13 @@ import (
 
 //Config represents the configuration of the chat server
 type Config struct {
-	Port        string `json:"port"`
-	Host        string `json:"host"`
-	LogFilePath string `json:"logFilePath"`
+	Ports       []string `json:"ports"`
+	Host        string   `json:"host"`
+	LogFilePath string   `json:"logFilePath"`
 }
 
 var defaultConfig = Config{
-	Port:        ":23",
+	Ports:       []string{"2300", "2301"},
 	Host:        "localhost",
 	LogFilePath: "./messagelog.log",
 }
