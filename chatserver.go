@@ -4,31 +4,30 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"sync"
 
 	"github.com/pkg/errors"
 )
 
-
+//ChatServer is a TCP chat server capable of running on multiple ports
 type ChatServer struct {
 	clients []*client
-	outbox chan Message
-	Errors chan error
+	outbox  chan Message
+	Errors  chan error
+	sync.Mutex
 }
 
-func NewChatServer() *ChatServer { 
-	return &ChatServer{[]*client{}, make(chan Message), make(chan error)}
-}
-func(server *ChatServer) registerClient(conn net.Conn, remoteAddress string) {
-	c := &client{
-		conn : conn,
-		name : "",
-		inbox: make(chan Message),
-		outbox : server.outbox,
+//NewChatServer instatiates a new chat server
+func NewChatServer() *ChatServer {
+	return &ChatServer{
+		clients: []*client{},
+		outbox:  make(chan Message),
+		Errors:  make(chan error),
 	}
-	server.clients = append(server.clients, c)
-	go c.handleConnection()
 }
-func(server *ChatServer) Serve() error {
+
+//Serve blocks and coordinates between listeners the server
+func (server *ChatServer) Serve() error {
 	for {
 		select {
 		case msg := <-server.outbox:
@@ -38,14 +37,16 @@ func(server *ChatServer) Serve() error {
 					server.clients[i].inbox <- msg
 				}
 			}
-		case err := <- server.Errors :
+		case err := <-server.Errors:
 			return err
 		}
 	}
 }
-func(server *ChatServer) Listen(listener net.Listener) {
+
+//Listen will accept connections on a the listener
+func (server *ChatServer) Listen(listener net.Listener) {
 	for {
-		conn , err := listener.Accept() 
+		conn, err := listener.Accept()
 		if err != nil {
 			server.Errors <- err
 		}
@@ -53,11 +54,9 @@ func(server *ChatServer) Listen(listener net.Listener) {
 	}
 }
 
-
-
-//ServeTCP opens tcp listeners for the given the specified configuration
-func ServeTCP(config Config) error {
-	server := NewChatServer() 
+//ListenAndServe opens tcp listeners for the given the specified configuration
+func ListenAndServe(config Config) error {
+	server := NewChatServer()
 	for _, port := range config.Ports {
 		url := fmt.Sprint(config.Host, ":", port)
 		listener, err := net.Listen("tcp", url)
@@ -69,4 +68,18 @@ func ServeTCP(config Config) error {
 	return server.Serve()
 }
 
+func (server *ChatServer) registerClient(conn net.Conn, remoteAddress string) {
+	server.Lock()
+	defer server.Unlock()
+	c := &client{
+		conn:    conn,
+		name:    "",
+		inbox:   make(chan Message),
+		outbox:  server.outbox,
+		closing: make(chan bool),
+	}
 
+	server.clients = append(server.clients, c)
+	go c.handleConnection()
+
+}

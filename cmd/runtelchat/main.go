@@ -26,7 +26,7 @@ func main() {
 	})
 	log.Println("Starting Server")
 	//start chat server
-	err = runtelchat.ServeTCP(config)
+	err = runtelchat.ListenAndServe(config)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
