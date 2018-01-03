@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const welcomePrompt = "Enter your chat name:"
+
 type client struct {
 	conn    net.Conn
 	name    string
@@ -37,7 +39,7 @@ func (c *client) waitForMessage() {
 
 func (c *client) handleConnection() {
 	for c.name == "" && !c.closed {
-		c.conn.Write([]byte("Enter your chat name:"))
+		c.conn.Write([]byte(welcomePrompt))
 		buf := make([]byte, 4096)
 		n, err := c.conn.Read(buf)
 		if err != nil && !c.closed {
