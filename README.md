@@ -40,3 +40,11 @@ This lib is used for rolling logging, simplifing logging
 The errors package is used to provide error wrapping
 [GoDoc](https://godoc.org/github.com/pkg/errors)
 
+## Known issues
+* Unit Tests need to be expanded
+* A slice of all clients exists even after they are disconnected. I'd like to clean that up
+
+## Why multi-port
+Well, quite simply so I could connect multiple chat clients from the same machine with the default telnet client
+
+
