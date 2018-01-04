@@ -57,14 +57,13 @@ func (server *ChatServer) Listen(listener net.Listener) {
 //ListenAndServe opens tcp listeners for the given the specified configuration
 func ListenAndServe(config Config) error {
 	server := NewChatServer()
-	for _, port := range config.Ports {
-		url := fmt.Sprint(config.Host, ":", port)
-		listener, err := net.Listen("tcp", url)
-		if err != nil {
-			return errors.Wrap(err, fmt.Sprint("Failed to open listener on ", url))
-		}
-		go server.Listen(listener)
+	url := fmt.Sprint(config.Host, ":", config.Port)
+	listener, err := net.Listen("tcp", url)
+	if err != nil {
+		return errors.Wrap(err, fmt.Sprint("Failed to open listener on ", url))
 	}
+	go server.Listen(listener)
+
 	return server.Serve()
 }
 

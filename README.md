@@ -1,6 +1,6 @@
 # runtelchat
 
-runtelchat is a chat server made for a coding exersize. This is a multi-socket TCP chat server that will accept tcp connections on the configured port and relay messages between multiple tcp clients.
+runtelchat is a chat server made for a coding exersize. This is a  TCP chat server that will accept tcp connections on the configured port and relay messages between multiple tcp clients.
 
 runtelhat is a play on words of the telnet client meant to be used as a redumentory client
 
@@ -20,7 +20,7 @@ A default configuration file is provided, if no configuration file exists, then 
 
 #### Configuration Items
 * host - IP or Hostname of the machine to accept connections on
-* ports - An array of ports to use
+* port - port to use
 * logFilePath - location of the log file
 
 
@@ -44,7 +44,5 @@ The errors package is used to provide error wrapping
 * Unit Tests need to be expanded
 * A slice of all clients exists even after they are disconnected. I'd like to clean that up
 
-## Why multi-port
-Well, quite simply so I could connect multiple chat clients from the same machine with the default telnet client
 
 

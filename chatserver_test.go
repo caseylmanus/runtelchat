@@ -10,7 +10,7 @@ import (
 //and a connected to
 func TestChatServerConnects(t *testing.T) {
 	go ListenAndServe(defaultConfig)
-	addr := defaultConfig.Host + ":" + defaultConfig.Ports[0]
+	addr := defaultConfig.Host + ":" + defaultConfig.Port
 	conn, err := net.Dial("tcp", addr)
 
 	defer conn.Close()
