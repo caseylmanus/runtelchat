@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -14,7 +15,8 @@ type ChatServer struct {
 	clients []*client
 	outbox  chan Message
 	Errors  chan error
-	sync.Mutex
+	closing chan *client
+	sync.RWMutex
 }
 
 //NewChatServer instatiates a new chat server
@@ -23,6 +25,7 @@ func NewChatServer() *ChatServer {
 		clients: []*client{},
 		outbox:  make(chan Message),
 		Errors:  make(chan error),
+		closing: make(chan *client),
 	}
 }
 
@@ -32,13 +35,17 @@ func (server *ChatServer) Serve() error {
 		select {
 		case msg := <-server.outbox:
 			log.Println(msg)
+			server.RLock()
 			for i := range server.clients {
-				if server.clients[i].name != msg.From && !server.clients[i].closed {
+				if server.clients[i] != msg.client {
 					server.clients[i].inbox <- msg
 				}
 			}
+			server.RUnlock()
 		case err := <-server.Errors:
 			return err
+		case c := <-server.closing:
+			server.closeClient(c)
 		}
 	}
 }
@@ -69,16 +76,39 @@ func ListenAndServe(config Config) error {
 
 func (server *ChatServer) registerClient(conn net.Conn, remoteAddress string) {
 	server.Lock()
-	defer server.Unlock()
+
 	c := &client{
 		conn:    conn,
 		name:    "",
 		inbox:   make(chan Message),
 		outbox:  server.outbox,
-		closing: make(chan bool),
+		closing: server.closing,
 	}
 
-	server.clients = append(server.clients, c)
+	server.clients = append(server.clients, c) 
+	server.Unlock()
 	go c.handleConnection()
 
+}
+
+func (server *ChatServer) closeClient(c *client) {
+	server.Lock()
+	copy := []*client{} 
+	for i := range server.clients {
+		if server.clients[i] != c  {
+			copy = append(copy, server.clients[i])
+		}
+	}
+	server.clients = copy
+	server.Unlock()
+	go func() {
+		server.outbox <- Message {
+			Text: fmt.Sprintf("%v has left the building.\r\n", c.name),
+			TimeStamp: time.Now(),
+			Address: c.address,
+			client: c,
+			From: "system",
+		}
+	}()
+	c.conn.Close()
 }

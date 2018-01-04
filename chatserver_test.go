@@ -1,7 +1,6 @@
 package runtelchat
 
 import (
-	"log"
 	"net"
 	"testing"
 )

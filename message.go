@@ -11,7 +11,9 @@ type Message struct {
 	From      string
 	Address   string
 	TimeStamp time.Time
+	client    *client
 }
+
 //String is the stringer interface
 func (m Message) String() string {
 	data, _ := json.Marshal(m)
