@@ -16,7 +16,7 @@ func TestChatServerConnects(t *testing.T) {
 	defer conn.Close()
 
 	if err != nil {
-		log.Fatalln(err)
+		t.Fatal(err)
 	}
 
 	buff := make([]byte, 1024)
