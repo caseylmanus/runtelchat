@@ -42,7 +42,6 @@ The errors package is used to provide error wrapping
 
 ## Known issues
 * Unit Tests need to be expanded
-* A slice of all clients exists even after they are disconnected. I'd like to clean that up
 
 
 
